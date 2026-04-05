@@ -16,10 +16,7 @@ class TelegramClient implements TelegramClientInterface
     public function sendMessage(string $botToken, string $chatId, string $text): bool
     {
         try {
-            $response = $this->httpClient->request('POST', "https://api.telegram.org/bot{$botToken}/sendMessage", [
-                'json' => ['chat_id' => $chatId, 'text' => $text],
-                'proxy' => 'socks5://localhost:8123',
-            ]);
+            $response = $this->httpClient->request('POST', "https://api.telegram.org/bot{$botToken}/sendMessage", ['json' => ['chat_id' => $chatId, 'text' => $text]]);
             return $response->getStatusCode() === 200;
         } catch (\Exception $e) {
             $this->logger->error('Telegram API error: ' . $e->getMessage());

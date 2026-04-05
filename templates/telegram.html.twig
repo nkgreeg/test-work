@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Telegram Integration</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        input { width: 300px; }
+        .hint { font-size: 12px; color: #666; margin-top: 4px; }
+        .status { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div id="root" data-shop-id="{{ shopId }}"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script type="text/babel">
+    const shopId = document.getElementById('root').dataset.shopId;
+
+    function TelegramApp() {
+        const [botToken, setBotToken] = React.useState('');
+        const [chatId, setChatId] = React.useState('');
+        const [enabled, setEnabled] = React.useState(false);
+        const [status, setStatus] = React.useState(null);
+        const [loading, setLoading] = React.useState(false);
+
+        React.useEffect(() => {
+            fetch(`/shops/${shopId}/telegram/status`)
+                .then(res => res.json())
+                .then(data => {
+                    setStatus(data);
+                    setBotToken(data.botToken || '');
+                    setChatId(data.chatId || '');
+                    setEnabled(data.enabled || false);
+                });
+        }, []);
+
+        const save = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`/shops/${shopId}/telegram/connect`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        botToken: botToken,
+                        chatId: chatId,
+                        enabled: enabled
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Saved:', data);
+
+                const statusRes = await fetch(`/shops/${shopId}/telegram/status`);
+                const statusData = await statusRes.json();
+                setStatus(statusData);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ошибка сохранения: ' + error.message);
+            }
+            setLoading(false);
+        };
+
+        return (
+            React.createElement('div', null,
+                React.createElement('h2', null, 'Telegram Интеграция'),
+                React.createElement('div', null,
+                    React.createElement('label', null, 'Bot Token:'),
+                    React.createElement('br'),
+                    React.createElement('input', {type: 'text', value: botToken, onChange: e => setBotToken(e.target.value)})
+                ),
+                React.createElement('div', null,
+                    React.createElement('label', null, 'Chat ID:'),
+                    React.createElement('br'),
+                    React.createElement('input', {type: 'text', value: chatId, onChange: e => setChatId(e.target.value)}),
+                    React.createElement('div', {className: 'hint'}, 'Как узнать chatId: напишите @userinfobot в Telegram')
+                ),
+                React.createElement('div', null,
+                    React.createElement('label', null,
+                        React.createElement('input', {type: 'checkbox', checked: enabled, onChange: e => setEnabled(e.target.checked)}),
+                        ' Enabled'
+                    )
+                ),
+                React.createElement('button', {onClick: save, disabled: loading}, loading ? 'Сохранение...' : 'Сохранить'),
+                status && React.createElement('div', {className: 'status'},
+                    React.createElement('h3', null, 'Статус'),
+                    React.createElement('div', null, 'Enabled: ', status.enabled ? 'Да' : 'Нет'),
+                    React.createElement('div', null, 'Chat ID: ', status.chatId),
+                    React.createElement('div', null, 'Last sent: ', status.lastSentAt ? new Date(status.lastSentAt).toLocaleString() : '—'),
+                    React.createElement('div', null, 'Sent (7 дней): ', status.sentCount),
+                    React.createElement('div', null, 'Failed (7 дней): ', status.failedCount)
+                )
+            )
+        );
+    }
+
+    ReactDOM.render(React.createElement(TelegramApp), document.getElementById('root'));
+</script>
+</body>
+</html>
