@@ -70,3 +70,4 @@ docker compose -f docker-compose.yaml --env-file .env.docker.local up --build
 ### TODO
 
 * JavaScript in HTML-file without webpack
+* All apps run as `root`

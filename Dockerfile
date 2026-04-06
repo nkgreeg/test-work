@@ -15,6 +15,10 @@ COPY composer.json composer.lock ./
 COPY entrypoint.sh ./
 COPY .env ./
 RUN composer install --no-scripts --no-interaction
-RUN mkdir -p var/cache var/log var/vendor
+RUN mkdir -p var/cache var/log var/vendor /www/data/var
 RUN chmod +x ./entrypoint.sh
+RUN chmod -R 777 /www/data/var
+RUN chmod -R 777 /tmp
+RUN sed -i 's/user = www-data/user = root/g' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/group = www-data/group = root/g' /usr/local/etc/php-fpm.d/www.conf
 ENTRYPOINT ["./entrypoint.sh"]
