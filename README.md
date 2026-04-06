@@ -69,6 +69,4 @@ docker compose -f docker-compose.yaml --env-file .env.docker.local up --build
 
 ### TODO
 
-* `docker-compose.yaml` do not use NGINX, just php -S
-* No log. App or NGINX
 * JavaScript in HTML-file without webpack
