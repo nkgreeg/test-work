@@ -13,7 +13,13 @@
 
 #### Telegram mock settings
 
-* `.evn.local` set `TELEGRAM_MOCK` `true` to send log
+* `.evn.local` set `TELEGRAM_MOCK` `true` to use mock telegram client that do not send message in chat
+
+### Copy and edit `compose.override.yaml`
+
+```shell
+cp compose.override.example.yaml compose.override.yaml
+```
 
 ### Up local database
 
@@ -46,3 +52,23 @@ symfony serve
 ```shell
 php bin/phpunit
 ```
+
+## Docker
+
+### Copy and edit `.env` config
+
+```shell
+cp .env.docker .env.docker.local
+```
+
+### Up
+
+```shell
+docker compose -f docker-compose.yaml --env-file .env.docker.local up --build
+```
+
+### TODO
+
+* `docker-compose.yaml` do not use NGINX, just php -S
+* No log. App or NGINX
+* JavaScript in HTML-file without webpack

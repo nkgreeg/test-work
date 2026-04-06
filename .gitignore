@@ -13,3 +13,5 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+compose.override.yaml

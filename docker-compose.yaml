@@ -1,24 +1,41 @@
 services:
-    app:
-        build: .
-        ports:
-            - "8000:8000"
-        environment:
-            DATABASE_URL: "postgresql://app:ChangeMe@db:5432/app?serverVersion=16&charset=utf8"
-        depends_on:
-            - db
-        command: sh -c "php bin/console doctrine:migrations:migrate --no-interaction && php -S 0.0.0.0:8000 -t public"
+  app:
+    build: .
+    privileged: true
+    ports:
+      - "${APP_PORT:-8000}:80"
+    restart: always
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      DATABASE_URL: "postgresql://${DB_USER:-app}:${DB_PASSWORD:-ChangeMe}@db:5432/${DB_NAME:-app}?serverVersion=${DB_VERSION:-16}&charset=utf8"
+    depends_on:
+      - db
+    command: sh -c "php bin/console doctrine:migrations:migrate --no-interaction && php-fpm -D && nginx -g 'daemon off;'"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx:/var/log/nginx
+    networks:
+      - app
 
-    db:
-        image: postgres:17-alpine
-        environment:
-            POSTGRES_DB: app
-            POSTGRES_PASSWORD: ChangeMe
-            POSTGRES_USER: app
-        ports:
-            - "5432:5432"
-        volumes:
-            - db_data:/var/lib/postgresql/data
+  db:
+    image: postgres:${POSTGRES_VERSION:-17}-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ChangeMe}
+      POSTGRES_USER: ${DB_USER:-app}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app
 
 volumes:
-    db_data:
+  db_data:
+  nginx:
+
+networks:
+  app:
+    driver: bridge
