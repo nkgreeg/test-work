@@ -27,14 +27,14 @@
         const [loading, setLoading] = React.useState(false);
 
         React.useEffect(() => {
-            fetch(`/shops/${shopId}/telegram/status`)
-                .then(res => res.json())
-                .then(data => {
-                    setStatus(data);
-                    setBotToken(data.botToken || '');
-                    setChatId(data.chatId || '');
-                    setEnabled(data.enabled || false);
-                });
+          fetch(`/shops/${shopId}/telegram/status`)
+            .then(res => res.json())
+            .then(data => {
+              setStatus(data);
+              setBotToken(data.botToken || '');
+              setChatId(data.chatId || '');
+              setEnabled(data.enabled === true);
+            });
         }, []);
 
         const save = async () => {
@@ -85,10 +85,14 @@
                     React.createElement('div', {className: 'hint'}, 'Как узнать chatId: напишите @userinfobot в Telegram')
                 ),
                 React.createElement('div', null,
-                    React.createElement('label', null,
-                        React.createElement('input', {type: 'checkbox', checked: enabled, onChange: e => setEnabled(e.target.checked)}),
-                        ' Enabled'
-                    )
+                  React.createElement('label', null,
+                    React.createElement('input', {
+                      type: 'checkbox',
+                      checked: enabled,
+                      onChange: e => setEnabled(e.target.checked)
+                    }),
+                    ' Enabled'
+                  )
                 ),
                 React.createElement('button', {onClick: save, disabled: loading}, loading ? 'Сохранение...' : 'Сохранить'),
                 status && React.createElement('div', {className: 'status'},
